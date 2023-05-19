@@ -3,9 +3,8 @@ SHA256 with bit granularity for message input length.
 
 
 ## Build the package
-Use the ``package`` script and give it the python interpreter to use as argument:
 ````
-./package python3
+python3 -m build
 ````
 
 ## Test
