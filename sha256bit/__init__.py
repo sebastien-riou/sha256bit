@@ -1,9 +1,9 @@
+import binascii
 import copy
 import struct
-import binascii
 
 
-class sha256bit(object):
+class sha256bit:
     F32 = 0xFFFFFFFF
 
     _k = [
@@ -119,37 +119,29 @@ class sha256bit(object):
         else:
             h = self._digest
             c = None
-        return {"h": h, "cnt": self._counter, "cache": c}
+        return {'h': h, 'cnt': self._counter, 'cache': c}
 
     @staticmethod
     def import_state(state):
         o = sha256bit()
-        o._counter = state["cnt"]
+        o._counter = state['cnt']
         if 0 != (o._counter % 8):
             o._has_bitlen = True
-        if state["cache"] is None:
-            o._digest = state["h"]
+        if state['cache'] is None:
+            o._digest = state['h']
             o._h = None
             o._cache = None
         else:
-            o._h = state["h"]
-            o._cache = bytearray(state["cache"])
+            o._h = state['h']
+            o._cache = bytearray(state['cache'])
         return o
 
     def _compress(self, c):
         w = [0] * 64
-        w[0:16] = struct.unpack("!16L", c)
+        w[0:16] = struct.unpack('!16L', c)
         for i in range(16, 64):
-            s0 = (
-                sha256bit._rotr(w[i - 15], 7)
-                ^ sha256bit._rotr(w[i - 15], 18)
-                ^ (w[i - 15] >> 3)
-            )
-            s1 = (
-                sha256bit._rotr(w[i - 2], 17)
-                ^ sha256bit._rotr(w[i - 2], 19)
-                ^ (w[i - 2] >> 10)
-            )
+            s0 = sha256bit._rotr(w[i - 15], 7) ^ sha256bit._rotr(w[i - 15], 18) ^ (w[i - 15] >> 3)
+            s1 = sha256bit._rotr(w[i - 2], 17) ^ sha256bit._rotr(w[i - 2], 19) ^ (w[i - 2] >> 10)
             w[i] = (w[i - 16] + s0 + w[i - 7] + s1) & sha256bit.F32
 
         a, b, c, d, e, f, g, h = self._h
@@ -179,12 +171,12 @@ class sha256bit(object):
         """
         if not m:
             return
-        assert not self._has_bitlen, "we support bitlen only for last call"
+        assert not self._has_bitlen, 'we support bitlen only for last call'
         if bitlen is not None:
             if 0 != (bitlen % 8):
                 self._has_bitlen = True
             else:
-                assert bitlen == len(m) * 8, "bitLen=%d, len(m)*8=%d" % (
+                assert bitlen == len(m) * 8, 'bitLen=%d, len(m)*8=%d' % (
                     bitlen,
                     len(m) * 8,
                 )
@@ -221,14 +213,14 @@ class sha256bit(object):
             mask = 0xFF << (8 - shift)
             self._cache[-1] = (self._cache[-1] & mask) | (0x80 >> shift)
         else:
-            self._cache += b"\x80"
-        self._cache += (b"\x00" * padlen) + self._counter.to_bytes(8, byteorder="big")
+            self._cache += b'\x80'
+        self._cache += (b'\x00' * padlen) + self._counter.to_bytes(8, byteorder='big')
         if False:
             from pysatl import Utils
 
-            print("counter=%d (0x%x)" % (self._counter, self._counter))
+            print('counter=%d (0x%x)' % (self._counter, self._counter))
             print(Utils.hexstr(self._cache))
-        assert len(self._cache) in [64, 128], "len(self._cache)=%d" % len(self._cache)
+        assert len(self._cache) in [64, 128], 'len(self._cache)=%d' % len(self._cache)
 
     def digest(self):
         """Return the digest of the bytes passed to the update() method
@@ -240,8 +232,8 @@ class sha256bit(object):
         blocks = [self._cache[i : i + 64] for i in range(0, len(self._cache), 64)]
         for b in blocks:
             self._compress(b)
-        data = [struct.pack("!L", i) for i in self._h[: self._output_size]]
-        self._digest = b"".join(data)
+        data = [struct.pack('!L', i) for i in self._h[: self._output_size]]
+        self._digest = b''.join(data)
         self._cache = None
         self._h = None
         return self._digest
@@ -250,4 +242,4 @@ class sha256bit(object):
         """Like digest() except the digest is returned as a string
         of double length, containing only hexadecimal digits.
         """
-        return binascii.hexlify(self.digest()).decode("ascii")
+        return binascii.hexlify(self.digest()).decode('ascii')

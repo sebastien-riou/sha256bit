@@ -1,6 +1,8 @@
 import hashlib
-from pysatl import Utils
 import re
+
+from pysatl import Utils
+
 from sha256bit import sha256bit
 
 
@@ -35,9 +37,9 @@ def msg_generator(seed, msg_bitlen):
 
 
 def check_against_hashlib(n_seeds=3, max_length=1024 * 4):
-    print("check against hashlib")
+    print('check against hashlib')
 
-    assert hashlib.sha256("abc".encode()).digest() == sha256bit("abc".encode()).digest()
+    assert hashlib.sha256(b'abc').digest() == sha256bit(b'abc').digest()
 
     def check_against_hashlib(seed, msg_bitlen):
         expected = hashlib.sha256()
@@ -57,54 +59,53 @@ def check_against_hashlib(n_seeds=3, max_length=1024 * 4):
 def check(msg, bitlen, sig):
     m = sha256bit()
     if isinstance(msg, str):
-        msg = msg.encode("ascii")
-    descr = "msg      = " + Utils.hexstr(msg) + "\n"
-    descr += "bitlen   = %d\n" % bitlen
-    descr += "expected = " + sig + "\n"
+        msg = msg.encode('ascii')
+    descr = 'msg      = ' + Utils.hexstr(msg) + '\n'
+    descr += 'bitlen   = %d\n' % bitlen
+    descr += 'expected = ' + sig + '\n'
     try:
         m.update(msg, bitlen=bitlen)
         digest = m.hexdigest()
     except Exception as e:
         print(descr)
         raise e
-    errMsg = "\n"
+    errMsg = '\n'
     errMsg += descr
-    errMsg += "digest   = " + digest + "\n"
+    errMsg += 'digest   = ' + digest + '\n'
     assert digest == sig, errMsg
 
 
 def check_hardcoded_test_vectors():
-    print("check few minimal hardcoded test vectors")
+    print('check few minimal hardcoded test vectors')
 
     tests = [
         {
-            "msg": "",
-            "bitlen": 0,
-            "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            'msg': '',
+            'bitlen': 0,
+            'digest': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
         },
         {
-            "msg": "a",
-            "bitlen": 8,
-            "digest": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+            'msg': 'a',
+            'bitlen': 8,
+            'digest': 'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
         },
         {
-            "msg": Utils.ba("00"),
-            "bitlen": 1,
-            "digest": "bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375",
+            'msg': Utils.ba('00'),
+            'bitlen': 1,
+            'digest': 'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375',
         },
         {
-            "msg": Utils.ba("80"),
-            "bitlen": 2,
-            "digest": "18f331f626210ff9bad6995d8cff6e891adba50eb2fdbddcaa921221cdc333ae",
+            'msg': Utils.ba('80'),
+            'bitlen': 2,
+            'digest': '18f331f626210ff9bad6995d8cff6e891adba50eb2fdbddcaa921221cdc333ae',
         },
     ]
 
     for test in tests:
-        check(test["msg"], test["bitlen"], test["digest"])
+        check(test['msg'], test['bitlen'], test['digest'])
 
     assert (
-        sha256bit(b"\x00", bitlen=1).hexdigest()
-        == "bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375"
+        sha256bit(b'\x00', bitlen=1).hexdigest() == 'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'
     )
 
 
@@ -115,23 +116,23 @@ def check_against_nist_cavp():
     from pathlib import Path
 
     resource_path = Path(__file__).parent
-    for tvFile in ["SHA256ShortMsg.rsp", "SHA256LongMsg.rsp"]:
+    for tvFile in ['SHA256ShortMsg.rsp', 'SHA256LongMsg.rsp']:
         tvPath = resource_path.joinpath(tvFile)
         with open(tvPath) as f:
             for line in f:
-                if line.startswith("Len"):
-                    bitlen = int(re.search(r"Len = (.+)", line).group(1))
-                if line.startswith("Msg"):
-                    msg = Utils.ba(re.search(r"Msg = (.+)", line).group(1))
+                if line.startswith('Len'):
+                    bitlen = int(re.search(r'Len = (.+)', line).group(1))
+                if line.startswith('Msg'):
+                    msg = Utils.ba(re.search(r'Msg = (.+)', line).group(1))
                     if bitlen == 0:
                         msg = bytes(0)
-                if line.startswith("MD"):
-                    MD = re.search(r"MD = (.+)", line).group(1)
+                if line.startswith('MD'):
+                    MD = re.search(r'MD = (.+)', line).group(1)
                     check(msg, bitlen, MD)
 
 
 def check_api():
-    print("check API")
+    print('check API')
     msg = msg_generator(bytes(0), 300 * 8)
     expected = hashlib.sha256(msg).digest()
     # print(Utils.hexstr(msg))
@@ -157,11 +158,15 @@ def check_api():
         state = dut.export_state()
         dut2 = sha256bit.import_state(state)
         assert expected == dut2.digest()
+    dut = sha256bit(b'\x00', bitlen=1)
+    state = dut.export_state()
+    dut2 = sha256bit.import_state(state)
+    assert dut2.hexdigest() == 'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     check_api()
     check_hardcoded_test_vectors()
     check_against_nist_cavp()
     check_against_hashlib(n_seeds=3, max_length=1024 * 4)
-    print("All test PASS")
+    print('All test PASS')
