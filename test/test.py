@@ -83,7 +83,8 @@ def check_hardcoded_test_vectors():
     for test in tests:
         check(test["msg"],test["bitlen"],test["digest"])
 
-    assert sha256bit(b'\x00',bitlen=1).hexdigest() == 'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'
+    assert sha256bit(b'\x00',bitlen=1).hexdigest() == \
+        'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'
 
 
 def check_against_nist_cavp():
@@ -95,16 +96,16 @@ def check_against_nist_cavp():
     for tvFile in ["SHA256ShortMsg.rsp","SHA256LongMsg.rsp"]:
         tvPath = resource_path.joinpath(tvFile)
         with open(tvPath) as f:
-            for l in f:
-                if l.startswith("Len"):
-                    bitlen = int(re.search(r"Len = (.+)",l).group(1))
-                if l.startswith("Msg"):
-                    msg = Utils.ba(re.search(r"Msg = (.+)",l).group(1))
-                    if bitlen==0:
-                        msg=bytes(0)
-                if l.startswith("MD"):
-                    MD = re.search(r"MD = (.+)",l).group(1)
-                    check(msg,bitlen,MD)
+            for line in f:
+                if line.startswith("Len"):
+                    bitlen = int(re.search(r"Len = (.+)", line).group(1))
+                if line.startswith("Msg"):
+                    msg = Utils.ba(re.search(r"Msg = (.+)", line).group(1))
+                    if bitlen == 0:
+                        msg = bytes(0)
+                if line.startswith("MD"):
+                    MD = re.search(r"MD = (.+)", line).group(1)
+                    check(msg, bitlen, MD)
 
 def check_api():
     print("check API")
