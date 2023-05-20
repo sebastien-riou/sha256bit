@@ -1,4 +1,8 @@
 # sha256bit
+
+[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
+
+
 Pure python implementation of SHA256 with features which are often lacking:
 - bit granularity for message input length
 - import/export API to "persist" the state in the middle of a hash computation
@@ -31,13 +35,28 @@ Pure python implementation of SHA256 with features which are often lacking:
     >>> h2.hexdigest()
     'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
 
-## Build the package
-````
-python3 -m build
-````
+## Test with `pytest`
 
-## Test
+    pytest-3
+
+## Test without `pytest`
 Tests can run without creating/installing the package:
-````
-python3 -m test.test
-````
+
+    python3 -m test.test
+
+
+you can also run each test separately:
+
+    python3 -m test.test_api
+    python3 -m test.test_cavp
+    python3 -m test.test_hardcoded
+    python3 -m test.test_vs_hashlib
+
+## Build the package
+Build is done using `hatchling`
+
+    python3 -m build
+
+
+## Create a new version
+Version is managed by `hatch-vcs`, you just need to create a tag in github. 
