@@ -2,11 +2,13 @@ import copy
 import struct
 import binascii
 
+
 class sha256bit(object):
 
     F32 = 0xFFFFFFFF
 
-    _k = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+    _k = [  
+        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
         0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
         0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
         0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -23,23 +25,22 @@ class sha256bit(object):
         0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
         0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2]
 
-    _h_init = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+    _h_init = [ 
+        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
         0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]
 
     @staticmethod
     def _rotr(x, y):
         return ((x >> y) | (x << (32 - y))) & sha256bit.F32
 
-
     @staticmethod
     def _maj(x, y, z):
         return (x & y) ^ (x & z) ^ (y & z)
 
-
     @staticmethod
     def _ch(x, y, z):
         return (x & y) ^ ((~x) & z)
-    
+
     _output_size = 8
     blocksize = 1
     block_size = 64
@@ -54,7 +55,7 @@ class sha256bit(object):
         self._h = copy.deepcopy(sha256bit._h_init)
         self._has_bitlen = False 
         self._digest = None
-        self.update(m,bitlen=bitlen)
+        self.update(m, bitlen=bitlen)
 
     def export_state(self):
         if self._digest is None:
@@ -63,7 +64,7 @@ class sha256bit(object):
         else:
             h = self._digest
             c = None
-        return {"h":h, "cnt":self._counter, "cache":c}
+        return {"h": h, "cnt": self._counter, "cache": c}
 
     @staticmethod
     def import_state(state):
@@ -117,16 +118,16 @@ class sha256bit(object):
             return
         assert not self._has_bitlen, "we support bitlen only for last call"
         if bitlen is not None:
-            if 0 != (bitlen%8):
+            if 0 != (bitlen % 8):
                 self._has_bitlen = True
             else:
-                assert bitlen == len(m)*8, "bitLen=%d, len(m)*8=%d"%(bitlen,len(m)*8)
+                assert bitlen == len(m) * 8, "bitLen=%d, len(m)*8=%d"%(bitlen, len(m) * 8)
             self._counter += bitlen
         else:
-            self._counter += len(m)*8
-        
+            self._counter += len(m) * 8
+
         self._cache += m
-        
+
         while len(self._cache) > 64:
             self._compress(self._cache[:64])
             self._cache = self._cache[64:]
@@ -148,14 +149,14 @@ class sha256bit(object):
             padlen = 119 - lastBlockFullBytesCnt
         if False:
             print(lastBlockBitLen,lastBlockFullBytesCnt,padlen, len(self._cache))
-        
+
         shift = self._counter % 8
-        if shift>0 and (len(self._cache)>0):
+        if shift > 0 and (len(self._cache) > 0):
             mask = 0xFF << (8-shift)
             self._cache[-1] = (self._cache[-1] & mask) | (0x80 >> shift)
         else:
             self._cache += b'\x80'
-        self._cache += (b'\x00' * padlen) + self._counter.to_bytes(8,byteorder='big')
+        self._cache += (b'\x00' * padlen) + self._counter.to_bytes(8, byteorder='big')
         if False:
             from pysatl import Utils
             print("counter=%d (0x%x)"%(self._counter,self._counter))
@@ -169,7 +170,7 @@ class sha256bit(object):
         if self._digest is not None:
             return self._digest
         self._pad()
-        blocks = [self._cache[i:i+64] for i in range(0, len(self._cache), 64)]
+        blocks = [self._cache[i:i + 64] for i in range(0, len(self._cache), 64)]
         for b in blocks:
             self._compress(b)
         data = [struct.pack('!L', i) for i in self._h[:self._output_size]]
