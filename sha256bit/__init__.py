@@ -45,17 +45,17 @@ class sha256bit(object):
     block_size = 64
     digest_size = 32
 
-    def __init__(self, m=None):
+    def __init__(self, m=None, *, bitlen=None):
         """ SHA-256 implementation supporting bit granularity for message input length.
             API is the same as hashlib.
         """
         self._counter = 0
         self._cache = bytearray()
         self._h = copy.deepcopy(sha256bit._h_init)
-        self.hasBitLen = False 
+        self.has_bitlen = False 
         self.finalizing = False
         self._digest = None
-        self.update(m)
+        self.update(m,bitlen=bitlen)
 
     def internal_state(self):
         return {"h":self._h, "cnt":self._counter, "cache":self._cache}
@@ -88,7 +88,7 @@ class sha256bit(object):
         for i, (x, y) in enumerate(zip(self._h, [a, b, c, d, e, f, g, h])):
             self._h[i] = (x + y) & sha256bit.F32
 
-    def update(self, m, *, bitLen=None):
+    def update(self, m, *, bitlen=None):
         """ Update the hash object with the bytes in data. Repeated calls
             are equivalent to a single call with the concatenation of all
             the arguments.
@@ -96,15 +96,15 @@ class sha256bit(object):
         if not m:
             return
 
-        if self.hasBitLen: 
+        if self.has_bitlen: 
             assert self.finalizing, "we support bitLen only for last block"
         
-        if bitLen is not None:
-            if 0 != (bitLen%8):
-                self.hasBitLen = True
+        if bitlen is not None:
+            if 0 != (bitlen%8):
+                self.has_bitlen = True
             else:
-                assert bitLen == len(m)*8, "bitLen=%d, len(m)*8=%d"%(bitLen,len(m)*8)
-            self._counter += bitLen
+                assert bitlen == len(m)*8, "bitLen=%d, len(m)*8=%d"%(bitlen,len(m)*8)
+            self._counter += bitlen
         else:
             self._counter += len(m)*8
         
@@ -116,7 +116,7 @@ class sha256bit(object):
 
         if len(self._cache) == 64:
             if 0 != (self._counter % 8):
-                assert self.hasBitLen
+                assert self.has_bitlen
                 # at least one bit is issing to form a full block, nothing to do
             else:
                 self._compress(self._cache[:64])

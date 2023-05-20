@@ -5,6 +5,9 @@ if __name__ == '__main__':
     from sha256bit import sha256bit
 
     print("check against hashlib")
+
+    assert hashlib.sha256("abc".encode()).digest() == sha256bit("abc".encode()).digest()
+
     def checkAgainstHashLib(seed,msgBitLen):
         lastBlockBitLen = msgBitLen % 512
         l2block = hashlib.sha256(seed).digest()
@@ -13,11 +16,11 @@ if __name__ == '__main__':
         assert blockBitLen == 64*8
         expected = hashlib.sha256()
         dut = sha256bit()
-        bitLen=0
-        while(bitLen+blockBitLen<msgBitLen):
+        bitlen=0
+        while(bitlen+blockBitLen<msgBitLen):
             expected.update(l2block)
             dut.update(l2block)
-            bitLen += blockBitLen
+            bitlen += blockBitLen
             l2block = hashlib.sha256(l2block).digest()
             l2block += hashlib.sha256(l2block).digest()
         # last block
@@ -33,16 +36,16 @@ if __name__ == '__main__':
             checkAgainstHashLib(seed,msgBitLen)
 
     print("check few minimal hardcoded test vectors")
-    def check(msg, bitLen, sig):
+    def check(msg, bitlen, sig):
         m = sha256bit()
         if isinstance(msg,str):
             msg=msg.encode('ascii')
         descr = "msg      = "+Utils.hexstr(msg)+"\n"
-        descr+= "bitLen   = %d\n"%bitLen
+        descr+= "bitlen   = %d\n"%bitlen
         descr+= "expected = "+sig+"\n"
         try:
             
-            m.update(msg, bitLen=bitLen)
+            m.update(msg, bitlen=bitlen)
             digest = m.hexdigest()
         except Exception as e:
             print(descr)
@@ -53,14 +56,17 @@ if __name__ == '__main__':
         assert digest == sig, errMsg
 
     tests = [
-        {"msg":"","bitLen":0,"digest":'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
-        {"msg":"a","bitLen":8,"digest":'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb'},
-        {"msg":Utils.ba("00"),"bitLen":1,"digest":'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'},
-        {"msg":Utils.ba("80"),"bitLen":2,"digest":'18f331f626210ff9bad6995d8cff6e891adba50eb2fdbddcaa921221cdc333ae'},
+        {"msg":"","bitlen":0,"digest":'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+        {"msg":"a","bitlen":8,"digest":'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb'},
+        {"msg":Utils.ba("00"),"bitlen":1,"digest":'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'},
+        {"msg":Utils.ba("80"),"bitlen":2,"digest":'18f331f626210ff9bad6995d8cff6e891adba50eb2fdbddcaa921221cdc333ae'},
     ]
 
     for test in tests:
-        check(test["msg"],test["bitLen"],test["digest"])
+        check(test["msg"],test["bitlen"],test["digest"])
+
+    assert sha256bit(b'\x00',bitlen=1).hexdigest() == 'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'
+
 
     print("check against 'short' and 'long' bit oriented test vectors from NIST CAVP")
     # (https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/shs/shabittestvectors.zip)
@@ -72,14 +78,14 @@ if __name__ == '__main__':
         with open(tvPath) as f:
             for l in f:
                 if l.startswith("Len"):
-                    bitLen = int(re.search(r"Len = (.+)",l).group(1))
+                    bitlen = int(re.search(r"Len = (.+)",l).group(1))
                 if l.startswith("Msg"):
                     msg = Utils.ba(re.search(r"Msg = (.+)",l).group(1))
-                    if bitLen==0:
+                    if bitlen==0:
                         msg=bytes(0)
                 if l.startswith("MD"):
                     MD = re.search(r"MD = (.+)",l).group(1)
-                    check(msg,bitLen,MD)
+                    check(msg,bitlen,MD)
 
     print("All test PASS")
                 
