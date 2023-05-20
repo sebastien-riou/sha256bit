@@ -85,8 +85,12 @@ class sha256bit(object):
         w = [0] * 64
         w[0:16] = struct.unpack('!16L', c)
         for i in range(16, 64):
-            s0 = sha256bit._rotr(w[i-15], 7) ^ sha256bit._rotr(w[i-15], 18) ^ (w[i-15] >> 3)
-            s1 = sha256bit._rotr(w[i-2], 17) ^ sha256bit._rotr(w[i-2], 19) ^ (w[i-2] >> 10)
+            s0 = ( sha256bit._rotr(w[i-15], 7) ^ 
+                   sha256bit._rotr(w[i-15], 18) ^ 
+                   (w[i-15] >> 3))
+            s1 = ( sha256bit._rotr(w[i-2], 17) ^ 
+                   sha256bit._rotr(w[i-2], 19) ^ 
+                   (w[i-2] >> 10))
             w[i] = (w[i-16] + s0 + w[i-7] + s1) & sha256bit.F32
 
         a, b, c, d, e, f, g, h = self._h
@@ -121,7 +125,8 @@ class sha256bit(object):
             if 0 != (bitlen % 8):
                 self._has_bitlen = True
             else:
-                assert bitlen == len(m) * 8, "bitLen=%d, len(m)*8=%d"%(bitlen, len(m) * 8)
+                assert bitlen == len(m) * 8, \
+                "bitLen=%d, len(m)*8=%d"%(bitlen, len(m) * 8)
             self._counter += bitlen
         else:
             self._counter += len(m) * 8
