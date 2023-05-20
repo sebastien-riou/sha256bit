@@ -52,13 +52,33 @@ class sha256bit(object):
         self._counter = 0
         self._cache = bytearray()
         self._h = copy.deepcopy(sha256bit._h_init)
-        self.has_bitlen = False 
-        self.finalizing = False
+        self._has_bitlen = False 
         self._digest = None
         self.update(m,bitlen=bitlen)
 
-    def internal_state(self):
-        return {"h":self._h, "cnt":self._counter, "cache":self._cache}
+    def export_state(self):
+        if self._digest is None:
+            h = self._h
+            c = self._cache
+        else:
+            h = self._digest
+            c = None
+        return {"h":h, "cnt":self._counter, "cache":c}
+
+    @staticmethod
+    def import_state(state):
+        o=sha256bit()
+        o._counter = state["cnt"]
+        if 0 != (o._counter % 8):
+            o._has_bitlen = True
+        if state["cache"] is None:
+            o._digest = state["h"]
+            o._h = None
+            o._cache = None
+        else:
+            o._h = state["h"]
+            o._cache = bytearray(state["cache"])
+        return o
 
     def _compress(self, c):
         w = [0] * 64
@@ -95,13 +115,10 @@ class sha256bit(object):
         """
         if not m:
             return
-
-        if self.has_bitlen: 
-            assert self.finalizing, "we support bitLen only for last block"
-        
+        assert not self._has_bitlen, "we support bitlen only for last call"
         if bitlen is not None:
             if 0 != (bitlen%8):
-                self.has_bitlen = True
+                self._has_bitlen = True
             else:
                 assert bitlen == len(m)*8, "bitLen=%d, len(m)*8=%d"%(bitlen,len(m)*8)
             self._counter += bitlen
@@ -116,7 +133,7 @@ class sha256bit(object):
 
         if len(self._cache) == 64:
             if 0 != (self._counter % 8):
-                assert self.has_bitlen
+                assert self._has_bitlen
                 # at least one bit is issing to form a full block, nothing to do
             else:
                 self._compress(self._cache[:64])
@@ -157,6 +174,8 @@ class sha256bit(object):
             self._compress(b)
         data = [struct.pack('!L', i) for i in self._h[:self._output_size]]
         self._digest = b''.join(data)
+        self._cache = None
+        self._h = None
         return self._digest
 
     def hexdigest(self):
