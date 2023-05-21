@@ -13,19 +13,18 @@ author = 'Sebastien Riou'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
+import sys, os
+# add root of the repo to the search path for modules
+p = os.path.abspath(os.path.join('..','..'))
+sys.path.append(p)
 
 extensions = [
     'sphinx_rtd_theme',
-    'sphinx_multiversion',
-]
-
-smv_tag_whitelist = r'^v\d+\.\d+.*$|latest'  # all tags of form v*.*.x and latest
-# Whitelist pattern for branches (set to '' to ignore all branches)
-smv_branch_whitelist = ''
-smv_released_pattern = r'v.*'
-smv_latest_version = 'v0.1'
-smv_remote_whitelist = None
-
+    'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx_autodoc_typehints',
+    'sphinx.ext.napoleon'
+]   
 
 templates_path = ['_templates']
 exclude_patterns = []
