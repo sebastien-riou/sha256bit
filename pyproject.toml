@@ -85,8 +85,8 @@ inline-quotes = "single"
 ban-relative-imports = "all"
 
 [tool.ruff.per-file-ignores]
-# Tests can use relative imports and assertions
-"test/**/*" = ["TID252", "S101"]
+# Tests can use relative imports and assertions and print
+"test/**/*" = ["TID252", "S101", "T201"]
 
 [tool.mypy]
 disallow_untyped_defs = false

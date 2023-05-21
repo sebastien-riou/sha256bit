@@ -3,7 +3,7 @@ import copy
 import struct
 
 
-class sha256bit:
+class Sha256bit:
     F32 = 0xFFFFFFFF
 
     _k = [
@@ -86,7 +86,7 @@ class sha256bit:
 
     @staticmethod
     def _rotr(x, y):
-        return ((x >> y) | (x << (32 - y))) & sha256bit.F32
+        return ((x >> y) | (x << (32 - y))) & Sha256bit.F32
 
     @staticmethod
     def _maj(x, y, z):
@@ -107,7 +107,7 @@ class sha256bit:
         """
         self._counter = 0
         self._cache = bytearray()
-        self._h = copy.deepcopy(sha256bit._h_init)
+        self._h = copy.deepcopy(Sha256bit._h_init)
         self._has_bitlen = False
         self._digest = None
         self.update(m, bitlen=bitlen)
@@ -123,7 +123,7 @@ class sha256bit:
 
     @staticmethod
     def import_state(state):
-        o = sha256bit()
+        o = Sha256bit()
         o._counter = state['cnt']
         if 0 != (o._counter % 8):
             o._has_bitlen = True
@@ -140,29 +140,29 @@ class sha256bit:
         w = [0] * 64
         w[0:16] = struct.unpack('!16L', c)
         for i in range(16, 64):
-            s0 = sha256bit._rotr(w[i - 15], 7) ^ sha256bit._rotr(w[i - 15], 18) ^ (w[i - 15] >> 3)
-            s1 = sha256bit._rotr(w[i - 2], 17) ^ sha256bit._rotr(w[i - 2], 19) ^ (w[i - 2] >> 10)
-            w[i] = (w[i - 16] + s0 + w[i - 7] + s1) & sha256bit.F32
+            s0 = Sha256bit._rotr(w[i - 15], 7) ^ Sha256bit._rotr(w[i - 15], 18) ^ (w[i - 15] >> 3)
+            s1 = Sha256bit._rotr(w[i - 2], 17) ^ Sha256bit._rotr(w[i - 2], 19) ^ (w[i - 2] >> 10)
+            w[i] = (w[i - 16] + s0 + w[i - 7] + s1) & Sha256bit.F32
 
         a, b, c, d, e, f, g, h = self._h
 
         for i in range(64):
-            s0 = sha256bit._rotr(a, 2) ^ sha256bit._rotr(a, 13) ^ sha256bit._rotr(a, 22)
-            t2 = s0 + sha256bit._maj(a, b, c)
-            s1 = sha256bit._rotr(e, 6) ^ sha256bit._rotr(e, 11) ^ sha256bit._rotr(e, 25)
-            t1 = h + s1 + sha256bit._ch(e, f, g) + sha256bit._k[i] + w[i]
+            s0 = Sha256bit._rotr(a, 2) ^ Sha256bit._rotr(a, 13) ^ Sha256bit._rotr(a, 22)
+            t2 = s0 + Sha256bit._maj(a, b, c)
+            s1 = Sha256bit._rotr(e, 6) ^ Sha256bit._rotr(e, 11) ^ Sha256bit._rotr(e, 25)
+            t1 = h + s1 + Sha256bit._ch(e, f, g) + Sha256bit._k[i] + w[i]
 
             h = g
             g = f
             f = e
-            e = (d + t1) & sha256bit.F32
+            e = (d + t1) & Sha256bit.F32
             d = c
             c = b
             b = a
-            a = (t1 + t2) & sha256bit.F32
+            a = (t1 + t2) & Sha256bit.F32
 
         for i, (x, y) in enumerate(zip(self._h, [a, b, c, d, e, f, g, h])):
-            self._h[i] = (x + y) & sha256bit.F32
+            self._h[i] = (x + y) & Sha256bit.F32
 
     def update(self, m, *, bitlen=None):
         """Update the hash object with the bytes in data. Repeated calls
@@ -171,18 +171,32 @@ class sha256bit:
         """
         if not m:
             return
-        assert not self._has_bitlen, 'we support bitlen only for last call'
+        if self._has_bitlen:
+            raise AssertionError('we support bitlen only for last call')
+        bytes_bitlen = len(m) * 8
         if bitlen is not None:
             if 0 != (bitlen % 8):
                 self._has_bitlen = True
+                if bytes_bitlen - bitlen >= 8 or bitlen >= bytes_bitlen:
+                    raise AssertionError(
+                        'bitlen=%d, bytes_bitlen=%d'
+                        % (
+                            bitlen,
+                            bytes_bitlen,
+                        )
+                    )
             else:
-                assert bitlen == len(m) * 8, 'bitLen=%d, len(m)*8=%d' % (
-                    bitlen,
-                    len(m) * 8,
-                )
+                if bitlen != bytes_bitlen:
+                    raise AssertionError(
+                        'bitlen=%d, bytes_bitlen=%d'
+                        % (
+                            bitlen,
+                            bytes_bitlen,
+                        )
+                    )
             self._counter += bitlen
         else:
-            self._counter += len(m) * 8
+            self._counter += bytes_bitlen
 
         self._cache += m
 
@@ -190,23 +204,17 @@ class sha256bit:
             self._compress(self._cache[:64])
             self._cache = self._cache[64:]
 
-        if len(self._cache) == 64:
-            if 0 != (self._counter % 8):
-                assert self._has_bitlen
-                # at least one bit is issing to form a full block, nothing to do
-            else:
-                self._compress(self._cache[:64])
-                self._cache = self._cache[64:]
+        if len(self._cache) == 64 and 0 == (self._counter % 8):
+            self._compress(self._cache[:64])
+            self._cache = self._cache[64:]
 
     def _pad(self):
-        lastBlockBitLen = self._counter % 512
-        lastBlockFullBytesCnt = lastBlockBitLen // 8
-        if lastBlockBitLen < 448:
-            padlen = 55 - lastBlockFullBytesCnt
+        last_block_bitlen = self._counter % 512
+        last_block_full_bytes_cnt = last_block_bitlen // 8
+        if last_block_bitlen < 448:
+            padlen = 55 - last_block_full_bytes_cnt
         else:
-            padlen = 119 - lastBlockFullBytesCnt
-        if False:
-            print(lastBlockBitLen, lastBlockFullBytesCnt, padlen, len(self._cache))
+            padlen = 119 - last_block_full_bytes_cnt
 
         shift = self._counter % 8
         if shift > 0 and (len(self._cache) > 0):
@@ -215,12 +223,9 @@ class sha256bit:
         else:
             self._cache += b'\x80'
         self._cache += (b'\x00' * padlen) + self._counter.to_bytes(8, byteorder='big')
-        if False:
-            from pysatl import Utils
 
-            print('counter=%d (0x%x)' % (self._counter, self._counter))
-            print(Utils.hexstr(self._cache))
-        assert len(self._cache) in [64, 128], 'len(self._cache)=%d' % len(self._cache)
+        if len(self._cache) not in [64, 128]:
+            raise AssertionError('len(self._cache)=%d' % len(self._cache))
 
     def digest(self):
         """Return the digest of the bytes passed to the update() method
