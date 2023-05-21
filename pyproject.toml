@@ -74,6 +74,7 @@ unfixable = [
   # Don't touch unused imports
   "F401",
 ]
+exclude = ["docs"]
 
 [tool.ruff.isort]
 known-first-party = ["sha256bit"]

@@ -23,13 +23,12 @@ smv_tag_whitelist = r'^v\d+\.\d+.*$|latest'  # all tags of form v*.*.x and lates
 # Whitelist pattern for branches (set to '' to ignore all branches)
 smv_branch_whitelist = ''
 smv_released_pattern = r'v.*'
-smv_latest_version = 'v0.0'
+smv_latest_version = 'v0.1'
 smv_remote_whitelist = None
 
 
 templates_path = ['_templates']
 exclude_patterns = []
-
 
 
 # -- Options for HTML output -------------------------------------------------
