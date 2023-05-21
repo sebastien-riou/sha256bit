@@ -57,6 +57,12 @@ you can also run each test separately:
     python3 -m test.test_hardcoded
     python3 -m test.test_vs_hashlib
 
+## Generate the doc
+
+    cd docs
+    pipenv shell
+    make clean doctest html
+
 ## Build the package
 Build is done using `hatchling`. The script `build` allows to build for different version of python3:
 
