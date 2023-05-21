@@ -12,7 +12,7 @@ Pure python implementation of SHA256 with features which are often lacking:
 - bit granularity for message input length
 - import/export API to "persist" the state in the middle of a hash computation
 
-[User documentation](sha256bit.rtfd.io) is hosted on readthedocs.
+[User documentation](https://sha256bit.rtfd.io) is hosted on readthedocs.
 
 ## Installation
 
