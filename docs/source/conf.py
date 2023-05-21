@@ -14,8 +14,9 @@ author = 'Sebastien Riou'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 import sys, os
+
 # add root of the repo to the search path for modules
-p = os.path.abspath(os.path.join('..','..'))
+p = os.path.abspath(os.path.join('..', '..'))
 sys.path.append(p)
 
 extensions = [
@@ -23,8 +24,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx_autodoc_typehints',
-    'sphinx.ext.napoleon'
-]   
+    'sphinx.ext.napoleon',
+]
 
 templates_path = ['_templates']
 exclude_patterns = []
