@@ -65,6 +65,14 @@ you can also run each test separately:
     pipenv shell
     make clean doctest html
 
+## Update pipenv for the doc
+
+    cd docs
+    pipenv shell
+    #use pip to update whatever ou want
+    pip freeze > requirements.txt
+    pipenv update
+    
 ## Build the package
 Build is done using `hatchling`. The script `build` allows to build for different version of python3:
 
