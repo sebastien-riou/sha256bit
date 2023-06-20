@@ -119,16 +119,28 @@ class Sha256bit:
         self.update(m, bitlen=bitlen)
 
     def export_state(self):
+        """Export current state to a dict"""
+
         if self._digest is None:
             h = self._h
             c = self._cache
+            if self._verbose:
+                logging.info("exporting current state:")
+                logging.info("  bitlen = %d"%self._counter)
+                logging.info("  state:  "+Utils.hexstr(self._state_bytes()))
+                logging.info("  cache:  "+Utils.hexstr(c))
         else:
             h = self._digest
             c = None
+            if self._verbose:
+                logging.info("exporting finalized digest:")
+                logging.info("  digest:  "+Utils.hexstr(h))
         return {'h': h, 'cnt': self._counter, 'cache': c}
 
     @staticmethod
     def import_state(state):
+        """Initialize an instance from an exported state"""
+
         o = Sha256bit()
         o._counter = state['cnt']
         if 0 != (o._counter % 8):
@@ -137,9 +149,17 @@ class Sha256bit:
             o._digest = state['h']
             o._h = None
             o._cache = None
+            if o._verbose:
+                logging.info("importing finalized digest:")
+                logging.info("  digest:  "+Utils.hexstr(o._digest))
         else:
             o._h = state['h']
             o._cache = bytearray(state['cache'])
+            if o._verbose:
+                logging.info("importing current state:")
+                logging.info("  bitlen = %d"%o._counter)
+                logging.info("  state:  "+Utils.hexstr(o._state_bytes()))
+                logging.info("  cache:  "+Utils.hexstr(o._cache))
         return o
 
     def _state_bytes(self):
