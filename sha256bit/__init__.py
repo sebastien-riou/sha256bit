@@ -1,8 +1,12 @@
 import binascii
 import copy
 import struct
-
-
+import sys
+import logging
+try:
+    from pysatl import Utils
+except ImportError:
+    pass # we just don't support logging
 class Sha256bit:
     F32 = 0xFFFFFFFF
 
@@ -105,6 +109,8 @@ class Sha256bit:
         """SHA-256 implementation supporting bit granularity for message input length.
         API is the same as hashlib.
         """
+
+        self._verbose = 'pysatl' in sys.modules
         self._counter = 0
         self._cache = bytearray()
         self._h = copy.deepcopy(Sha256bit._h_init)
@@ -136,9 +142,17 @@ class Sha256bit:
             o._cache = bytearray(state['cache'])
         return o
 
-    def _compress(self, c):
+    def _state_bytes(self):
+        return b''.join([struct.pack('!L', i) for i in self._h[: self._output_size]])
+
+    def _compress(self, block):
+        if self._verbose:
+            logging.info("state:  "+Utils.hexstr(self._state_bytes()))
+            logging.info("block:  "+Utils.hexstr(block))
+
         w = [0] * 64
-        w[0:16] = struct.unpack('!16L', c)
+        w[0:16] = struct.unpack('!16L', block)
+
         for i in range(16, 64):
             s0 = Sha256bit._rotr(w[i - 15], 7) ^ Sha256bit._rotr(w[i - 15], 18) ^ (w[i - 15] >> 3)
             s1 = Sha256bit._rotr(w[i - 2], 17) ^ Sha256bit._rotr(w[i - 2], 19) ^ (w[i - 2] >> 10)
@@ -146,11 +160,22 @@ class Sha256bit:
 
         a, b, c, d, e, f, g, h = self._h
 
+        if self._verbose:
+            logging.debug("current state:")
+            logging.debug("  a = 0x%08x"%(a))
+            logging.debug("  b = 0x%08x"%(b))
+            logging.debug("  c = 0x%08x"%(c))
+            logging.debug("  d = 0x%08x"%(d))
+            logging.debug("  e = 0x%08x"%(e))
+            logging.debug("  f = 0x%08x"%(f))
+            logging.debug("  g = 0x%08x"%(g))
+            logging.debug("  h = 0x%08x"%(h))
+
         for i in range(64):
             s0 = Sha256bit._rotr(a, 2) ^ Sha256bit._rotr(a, 13) ^ Sha256bit._rotr(a, 22)
-            t2 = s0 + Sha256bit._maj(a, b, c)
+            t2 = (s0 + Sha256bit._maj(a, b, c)) & Sha256bit.F32
             s1 = Sha256bit._rotr(e, 6) ^ Sha256bit._rotr(e, 11) ^ Sha256bit._rotr(e, 25)
-            t1 = h + s1 + Sha256bit._ch(e, f, g) + Sha256bit._k[i] + w[i]
+            t1 = (h + s1 + Sha256bit._ch(e, f, g) + Sha256bit._k[i] + w[i]) & Sha256bit.F32
 
             h = g
             g = f
@@ -160,6 +185,23 @@ class Sha256bit:
             c = b
             b = a
             a = (t1 + t2) & Sha256bit.F32
+
+            if self._verbose:
+                logging.debug("state after round %d"%(i+1))
+                logging.debug("  k[%02d] = 0x%08x"%(i,Sha256bit._k[i]))
+                logging.debug("  w[%02d] = 0x%08x"%(i,w[i]))
+                logging.debug("  s0    = 0x%08x"%(s0))
+                logging.debug("  s1    = 0x%08x"%(s1))
+                logging.debug("  t1    = 0x%08x"%(t1))
+                logging.debug("  t2    = 0x%08x"%(t2))
+                logging.debug("  a     = 0x%08x"%(a))
+                logging.debug("  b     = 0x%08x"%(b))
+                logging.debug("  c     = 0x%08x"%(c))
+                logging.debug("  d     = 0x%08x"%(d))
+                logging.debug("  e     = 0x%08x"%(e))
+                logging.debug("  f     = 0x%08x"%(f))
+                logging.debug("  g     = 0x%08x"%(g))
+                logging.debug("  h     = 0x%08x"%(h))
 
         for i, (x, y) in enumerate(zip(self._h, [a, b, c, d, e, f, g, h])):
             self._h[i] = (x + y) & Sha256bit.F32
@@ -215,13 +257,22 @@ class Sha256bit:
             padlen = 55 - last_block_full_bytes_cnt
         else:
             padlen = 119 - last_block_full_bytes_cnt
-
+        
         shift = self._counter % 8
+        
+        if self._verbose:
+            logging.debug("bitlen = %d"%self._counter)
+            logging.debug("last_block_bitlen = %d"%last_block_bitlen)
+            logging.debug("last_block_full_bytes_cnt = %d"%last_block_full_bytes_cnt)
+            logging.debug("padlen = %d"%padlen)
+            logging.debug("shift = %d"%shift)
+
         if shift > 0 and (len(self._cache) > 0):
             mask = 0xFF << (8 - shift)
             self._cache[-1] = (self._cache[-1] & mask) | (0x80 >> shift)
         else:
             self._cache += b'\x80'
+
         self._cache += (b'\x00' * padlen) + self._counter.to_bytes(8, byteorder='big')
 
         if len(self._cache) not in [64, 128]:
@@ -233,14 +284,23 @@ class Sha256bit:
         """
         if self._digest is not None:
             return self._digest
+        if self._verbose:
+            logging.info ("bitlen: %d"%self._counter)
+        
         self._pad()
         blocks = [self._cache[i : i + 64] for i in range(0, len(self._cache), 64)]
         for b in blocks:
             self._compress(b)
         data = [struct.pack('!L', i) for i in self._h[: self._output_size]]
         self._digest = b''.join(data)
+        if self._verbose:
+            logging.debug("state:  "+Utils.hexstr(self._state_bytes()))
+            logging.info ("digest: "+Utils.hexstr(self._digest))
+        
+
         self._cache = None
         self._h = None
+    
         return self._digest
 
     def hexdigest(self):
@@ -248,3 +308,4 @@ class Sha256bit:
         of double length, containing only hexadecimal digits.
         """
         return binascii.hexlify(self.digest()).decode('ascii')
+
