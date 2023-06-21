@@ -1,5 +1,4 @@
 import binascii
-import copy
 import logging
 import struct
 import sys
@@ -13,7 +12,18 @@ except ImportError:
 class Sha256bit:
     F32 = 0xFFFFFFFF
 
-    _k = [
+    H_INIT = (
+        0x6A09E667,
+        0xBB67AE85,
+        0x3C6EF372,
+        0xA54FF53A,
+        0x510E527F,
+        0x9B05688C,
+        0x1F83D9AB,
+        0x5BE0CD19,
+    )
+
+    K = (
         0x428A2F98,
         0x71374491,
         0xB5C0FBCF,
@@ -78,18 +88,7 @@ class Sha256bit:
         0xA4506CEB,
         0xBEF9A3F7,
         0xC67178F2,
-    ]
-
-    _h_init = [
-        0x6A09E667,
-        0xBB67AE85,
-        0x3C6EF372,
-        0xA54FF53A,
-        0x510E527F,
-        0x9B05688C,
-        0x1F83D9AB,
-        0x5BE0CD19,
-    ]
+    )
 
     @staticmethod
     def _rotr(x, y):
@@ -116,9 +115,10 @@ class Sha256bit:
         self._verbose = 'pysatl' in sys.modules
         self._counter = 0
         self._cache = bytearray()
-        self._h = copy.deepcopy(Sha256bit._h_init)
+        self._h = list(Sha256bit.H_INIT)
         self._has_bitlen = False
         self._digest = None
+
         self.update(m, bitlen=bitlen)
 
     def export_state(self):
@@ -198,7 +198,7 @@ class Sha256bit:
             s0 = Sha256bit._rotr(a, 2) ^ Sha256bit._rotr(a, 13) ^ Sha256bit._rotr(a, 22)
             t2 = (s0 + Sha256bit._maj(a, b, c)) & Sha256bit.F32
             s1 = Sha256bit._rotr(e, 6) ^ Sha256bit._rotr(e, 11) ^ Sha256bit._rotr(e, 25)
-            t1 = (h + s1 + Sha256bit._ch(e, f, g) + Sha256bit._k[i] + w[i]) & Sha256bit.F32
+            t1 = (h + s1 + Sha256bit._ch(e, f, g) + Sha256bit.K[i] + w[i]) & Sha256bit.F32
 
             h = g
             g = f
@@ -211,7 +211,7 @@ class Sha256bit:
 
             if self._verbose:
                 logging.debug('state after round %d' % (i + 1))
-                logging.debug('  k[%02d] = 0x%08x' % (i, Sha256bit._k[i]))
+                logging.debug('  k[%02d] = 0x%08x' % (i, Sha256bit.K[i]))
                 logging.debug('  w[%02d] = 0x%08x' % (i, w[i]))
                 logging.debug('  s0    = 0x%08x' % (s0))
                 logging.debug('  s1    = 0x%08x' % (s1))
