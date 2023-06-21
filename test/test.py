@@ -99,6 +99,51 @@ def check_hardcoded_test_vectors():
             'bitlen': 2,
             'digest': '18f331f626210ff9bad6995d8cff6e891adba50eb2fdbddcaa921221cdc333ae',
         },
+        {
+            'msg': Utils.ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4'),
+            'bitlen': 447,
+            'digest': 'c123373c1f86be0ce17b4786eb7ef6efe5c343ee43be0ab5be2fa3d8b56d94c6',
+        },
+        {
+            'msg': Utils.ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4'),
+            'bitlen': 448,
+            'digest': 'd32a8ff92fbff08265fa8afc6d932a48a0548d7eb79a27c039d361304472df52',
+        },
+        {
+            'msg': Utils.ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 00'),
+            'bitlen': 449,
+            'digest': 'd92d5c37640bd3f5c692a09394cd6969485815b4c42da7367850def5d517ef6f',
+        },
+        {
+            'msg': Utils.ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56'),
+            'bitlen': 511,
+            'digest': '618eaf0976a52617868d69aacc7ccefe0237319fa2e7b08511bd11bd0a5fdcae',
+        },
+        {
+            'msg': Utils.ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56'),
+            'bitlen': 512,
+            'digest': '5fe4463c6c44975ee6ecc2929fc266c5919a867c9c4993216f20a65f992a1a00',
+        },
+        {
+            'msg': Utils.ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56 00'),
+            'bitlen': 513,
+            'digest': '7db0e54c522ae26960ae971a33744cd78cf0df06f965ab4458f1fddf61510168',
+        },
+        {
+            'msg': Utils.ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56 5F E4 46 3C'),
+            'bitlen': 512+32,
+            'digest': 'cc87d0d00ee74d5b2f47177770ff784f5a72b18933146533fbc1bcac6c7007b9',
+        },
+        {
+            'msg': Utils.ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56 5F E4 46 3C 6C 44 97 5E E6 EC C2 92 9F C2 66 C5 91 9A 86 7C 9C 49 93 21 6F 20 A6 5F 99 2A 1A 00 3B 6C D9 97 66 FA 87 0F DC A0 7E 1A 8E 38 D5 F4 DA 51 C7 15 1F 8D 47 EE'),
+            'bitlen': 512+447,
+            'digest': '99864bc34a68094ff6beb97fb66db2b9e869e1e5611b2ad2c539b009011fdbc6',
+        },
+        {
+            'msg': msg_generator(bytes(0),3),
+            'bitlen': 3,
+            'digest': '8287ea50445e9ddd80b791cf413e74d152a577b8441b93fa29d88edc830f4400',
+        },
     ]
 
     for test in tests:
