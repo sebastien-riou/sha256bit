@@ -81,3 +81,9 @@ Build is done using `hatchling`. The script `build` allows to build for differen
 
 ## Create a new version
 Version is managed by `hatch-vcs`, you just need to create a tag in github. 
+
+## Launch linters
+They use the configuration from `pyproject.toml`
+
+    ./lint
+

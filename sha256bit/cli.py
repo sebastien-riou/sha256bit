@@ -1,10 +1,11 @@
-from pysatl import Utils
-import sys
-from sha256bit import Sha256bit
 import argparse
 import logging
 
-if __name__ == "__main__":
+from pysatl import Utils
+
+from sha256bit import Sha256bit
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='sha256bit.cli')
     levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
     parser.add_argument('--log-level', default='WARNING', choices=levels)

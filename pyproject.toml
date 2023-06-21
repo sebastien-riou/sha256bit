@@ -88,6 +88,8 @@ ban-relative-imports = "all"
 [tool.ruff.per-file-ignores]
 # Tests can use relative imports and assertions and print
 "test/**/*" = ["TID252", "S101", "T201"]
+# CLI can print
+"sha256bit/cli.py" = ["T201"]
 
 [tool.mypy]
 disallow_untyped_defs = false
