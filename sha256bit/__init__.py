@@ -1,12 +1,8 @@
 import binascii
 import logging
 import struct
-import sys
 
-try:
-    from pysatl import Utils
-except ImportError:
-    pass  # we just don't support logging
+from sha256bit.utils import hexstr
 
 
 class Sha256bit:
@@ -102,20 +98,21 @@ class Sha256bit:
     def _ch(x, y, z):
         return (x & y) ^ ((~x) & z)
 
+    _alg = 'sha256'
     _output_size = 8
     blocksize = 1
     block_size = 64
     digest_size = 32
 
     def __init__(self, m=None, *, bitlen=None):
-        """SHA-256 implementation supporting bit granularity for message input length.
+        """SHA-2 (256 bits internal state) implementation supporting bit granularity for message input length.
         API is the same as hashlib.
         """
 
-        self._verbose = 'pysatl' in sys.modules
+        self._verbose = logging.getLogger().isEnabledFor(logging.INFO)
         self._counter = 0
         self._cache = bytearray()
-        self._h = list(Sha256bit.H_INIT)
+        self._h = list(self.H_INIT)
         self._has_bitlen = False
         self._digest = None
 
@@ -130,21 +127,24 @@ class Sha256bit:
             if self._verbose:
                 logging.info('exporting current state:')
                 logging.info('  bitlen = %d' % self._counter)
-                logging.info('  state:  ' + Utils.hexstr(self._state_bytes()))
-                logging.info('  cache:  ' + Utils.hexstr(c))
+                logging.info('  state:  ' + hexstr(self._state_bytes()))
+                logging.info('  cache:  ' + hexstr(c))
         else:
             h = self._digest
             c = None
             if self._verbose:
                 logging.info('exporting finalized digest:')
-                logging.info('  digest:  ' + Utils.hexstr(h))
-        return {'h': h, 'cnt': self._counter, 'cache': c}
+                logging.info('  digest:  ' + hexstr(h))
+        return {'alg': self._alg, 'h': h, 'cnt': self._counter, 'cache': c}
 
-    @staticmethod
-    def import_state(state):
+    @classmethod
+    def import_state(cls, state):
         """Initialize an instance from an exported state"""
 
-        o = Sha256bit()
+        alg = state.get('alg', cls._alg)
+        if alg != cls._alg:
+            raise AssertionError('state is for %s, cannot import it in %s' % (alg, cls.__name__))
+        o = cls()
         o._counter = state['cnt']
         if 0 != (o._counter % 8):
             o._has_bitlen = True
@@ -154,24 +154,24 @@ class Sha256bit:
             o._cache = None
             if o._verbose:
                 logging.info('importing finalized digest:')
-                logging.info('  digest:  ' + Utils.hexstr(o._digest))
+                logging.info('  digest:  ' + hexstr(o._digest))
         else:
             o._h = state['h']
             o._cache = bytearray(state['cache'])
             if o._verbose:
                 logging.info('importing current state:')
                 logging.info('  bitlen = %d' % o._counter)
-                logging.info('  state:  ' + Utils.hexstr(o._state_bytes()))
-                logging.info('  cache:  ' + Utils.hexstr(o._cache))
+                logging.info('  state:  ' + hexstr(o._state_bytes()))
+                logging.info('  cache:  ' + hexstr(o._cache))
         return o
 
     def _state_bytes(self):
-        return b''.join([struct.pack('!L', i) for i in self._h[: self._output_size]])
+        return b''.join([struct.pack('!L', i) for i in self._h])
 
     def _compress(self, block):
         if self._verbose:
-            logging.info('state:  ' + Utils.hexstr(self._state_bytes()))
-            logging.info('block:  ' + Utils.hexstr(block))
+            logging.info('state:  ' + hexstr(self._state_bytes()))
+            logging.info('block:  ' + hexstr(block))
 
         w = [0] * 64
         w[0:16] = struct.unpack('!16L', block)
@@ -317,8 +317,8 @@ class Sha256bit:
         data = [struct.pack('!L', i) for i in self._h[: self._output_size]]
         self._digest = b''.join(data)
         if self._verbose:
-            logging.debug('state:  ' + Utils.hexstr(self._state_bytes()))
-            logging.info('digest: ' + Utils.hexstr(self._digest))
+            logging.debug('state:  ' + hexstr(self._state_bytes()))
+            logging.info('digest: ' + hexstr(self._digest))
 
         self._cache = None
         self._h = None
@@ -330,3 +330,24 @@ class Sha256bit:
         of double length, containing only hexadecimal digits.
         """
         return binascii.hexlify(self.digest()).decode('ascii')
+
+
+class Sha224bit(Sha256bit):
+    """SHA-224 implementation supporting bit granularity for message input length.
+    API is the same as hashlib.
+    """
+
+    H_INIT = (
+        0xC1059ED8,
+        0x367CD507,
+        0x3070DD17,
+        0xF70E5939,
+        0xFFC00B31,
+        0x68581511,
+        0x64F98FA7,
+        0xBEFA4FA4,
+    )
+
+    _alg = 'sha224'
+    _output_size = 7
+    digest_size = 28

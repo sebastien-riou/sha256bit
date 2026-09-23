@@ -14,6 +14,19 @@ One liner
 
     ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
 
+SHA-224
+=======
+``Sha224bit`` has the same API as ``Sha256bit``.
+
+.. testcode::
+
+    from sha256bit import Sha224bit
+    print(Sha224bit("abc".encode()).hexdigest())
+
+.. testoutput::
+
+    23097d223405d8228642a477bda255b32aadbce4bda0b3f7e36c9da7
+
 
 Bit length capability
 =====================
@@ -102,10 +115,10 @@ The verbosity is controlled by the logging level.
     :skipif: True
 
     import logging
-    from pysatl import Utils
     from sha256bit import Sha256bit
+    from sha256bit.utils import ba
     logging.basicConfig(format='%(message)s', level='INFO')
-    message = Utils.ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56 5F E4 46 3C')
+    message = ba('E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6 E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56 5F E4 46 3C')
     h1 = Sha256bit(message[0:64])
     state = h1.export_state()
     h2 = Sha256bit.import_state(state)

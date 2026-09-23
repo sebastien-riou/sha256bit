@@ -8,7 +8,7 @@
 | Meta | [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)  [![linting - Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v0.json)](https://github.com/charliermarsh/ruff) [![code style - Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![types - Mypy](https://img.shields.io/badge/types-Mypy-blue.svg)](https://github.com/python/mypy) [![License - apache-2.0](https://img.shields.io/badge/license-apache--2.0-blue)](https://spdx.org/licenses/) |
 
 
-Pure python implementation of SHA256 with features which are often lacking:
+Pure python implementation of SHA256 and SHA224 with features which are often lacking:
 - bit granularity for message input length
 - import/export API to "persist" the state in the middle of a hash computation
 
@@ -25,6 +25,13 @@ Pure python implementation of SHA256 with features which are often lacking:
     >>> from sha256bit import Sha256bit
     >>> Sha256bit("abc".encode()).hexdigest()
     'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
+
+### SHA-224
+`Sha224bit` has the same API as `Sha256bit`.
+
+    >>> from sha256bit import Sha224bit
+    >>> Sha224bit("abc".encode()).hexdigest()
+    '23097d223405d8228642a477bda255b32aadbce4bda0b3f7e36c9da7'
 
 ### Bit length capability
 

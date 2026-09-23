@@ -1,9 +1,10 @@
 import hashlib
 import re
 
-from pysatl import Utils
+from sha256bit import Sha224bit, Sha256bit
+from sha256bit.utils import ba, hexstr
 
-from sha256bit import Sha256bit
+ALGOS = [(Sha256bit, hashlib.sha256), (Sha224bit, hashlib.sha224)]
 
 
 def block_generator(seed, msg_bitlen):
@@ -37,15 +38,20 @@ def msg_generator(seed, msg_bitlen):
 
 
 def check_against_hashlib(n_seeds=3, max_length=1024 * 4):
-    print('check against hashlib')
+    for cls, ref in ALGOS:
+        check_against_hashlib_alg(cls, ref, n_seeds, max_length)
 
-    assert hashlib.sha256(b'abc').digest() == Sha256bit(b'abc').digest()
+
+def check_against_hashlib_alg(cls, ref, n_seeds, max_length):
+    print('check %s against hashlib' % cls.__name__)
+
+    assert ref(b'abc').digest() == cls(b'abc').digest()
 
     def check_against_hashlib(seed, msg_bitlen):
-        expected = hashlib.sha256()
-        dut = Sha256bit()
+        expected = ref()
+        dut = cls()
         for block in block_generator(seed, msg_bitlen):
-            # print(Utils.hexstr(block))
+            # print(hexstr(block))
             expected.update(block)
             dut.update(block)
         assert expected.digest() == dut.digest()
@@ -56,11 +62,12 @@ def check_against_hashlib(n_seeds=3, max_length=1024 * 4):
             check_against_hashlib(seed, msg_bitlen)
 
 
-def check(msg, bitlen, sig):
-    m = Sha256bit()
+def check(msg, bitlen, sig, cls=Sha256bit):
+    m = cls()
     if isinstance(msg, str):
         msg = msg.encode('ascii')
-    descr = 'msg      = ' + Utils.hexstr(msg) + '\n'
+    descr = 'alg      = ' + cls.__name__ + '\n'
+    descr += 'msg      = ' + hexstr(msg) + '\n'
     descr += 'bitlen   = %d\n' % bitlen
     descr += 'expected = ' + sig + '\n'
     try:
@@ -90,17 +97,17 @@ def check_hardcoded_test_vectors():
             'digest': 'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
         },
         {
-            'msg': Utils.ba('00'),
+            'msg': ba('00'),
             'bitlen': 1,
             'digest': 'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375',
         },
         {
-            'msg': Utils.ba('80'),
+            'msg': ba('80'),
             'bitlen': 2,
             'digest': '18f331f626210ff9bad6995d8cff6e891adba50eb2fdbddcaa921221cdc333ae',
         },
         {
-            'msg': Utils.ba(
+            'msg': ba(
                 'E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6'
                 + 'E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4'
             ),
@@ -108,7 +115,7 @@ def check_hardcoded_test_vectors():
             'digest': 'c123373c1f86be0ce17b4786eb7ef6efe5c343ee43be0ab5be2fa3d8b56d94c6',
         },
         {
-            'msg': Utils.ba(
+            'msg': ba(
                 'E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6'
                 + 'E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4'
             ),
@@ -116,7 +123,7 @@ def check_hardcoded_test_vectors():
             'digest': 'd32a8ff92fbff08265fa8afc6d932a48a0548d7eb79a27c039d361304472df52',
         },
         {
-            'msg': Utils.ba(
+            'msg': ba(
                 'E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6'
                 + 'E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 00'
             ),
@@ -124,7 +131,7 @@ def check_hardcoded_test_vectors():
             'digest': 'd92d5c37640bd3f5c692a09394cd6969485815b4c42da7367850def5d517ef6f',
         },
         {
-            'msg': Utils.ba(
+            'msg': ba(
                 'E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6'
                 + 'E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56'
             ),
@@ -132,7 +139,7 @@ def check_hardcoded_test_vectors():
             'digest': '618eaf0976a52617868d69aacc7ccefe0237319fa2e7b08511bd11bd0a5fdcae',
         },
         {
-            'msg': Utils.ba(
+            'msg': ba(
                 'E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6'
                 + 'E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56'
             ),
@@ -140,7 +147,7 @@ def check_hardcoded_test_vectors():
             'digest': '5fe4463c6c44975ee6ecc2929fc266c5919a867c9c4993216f20a65f992a1a00',
         },
         {
-            'msg': Utils.ba(
+            'msg': ba(
                 'E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6'
                 + 'E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56 00'
             ),
@@ -148,7 +155,7 @@ def check_hardcoded_test_vectors():
             'digest': '7db0e54c522ae26960ae971a33744cd78cf0df06f965ab4458f1fddf61510168',
         },
         {
-            'msg': Utils.ba(
+            'msg': ba(
                 'E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6'
                 + 'E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56 5F E4 46'
                 + '3C'
@@ -157,7 +164,7 @@ def check_hardcoded_test_vectors():
             'digest': 'cc87d0d00ee74d5b2f47177770ff784f5a72b18933146533fbc1bcac6c7007b9',
         },
         {
-            'msg': Utils.ba(
+            'msg': ba(
                 'E3 B0 C4 42 98 FC 1C 14 9A FB F4 C8 99 6F B9 24 27 AE 41 E4 64 9B 93 4C A4 95 99 1B 78 52 B8 55 5D F6'
                 + 'E0 E2 76 13 59 D3 0A 82 75 05 8E 29 9F CC 03 81 53 45 45 F5 5C F4 3E 41 98 3F 5D 4C 94 56 5F E4 46'
                 + '3C 6C 44 97 5E E6 EC C2 92 9F C2 66 C5 91 9A 86 7C 9C 49 93 21 6F 20 A6 5F 99 2A 1A 00 3B 6C D9 97'
@@ -176,6 +183,56 @@ def check_hardcoded_test_vectors():
     for test in tests:
         check(test['msg'], test['bitlen'], test['digest'])
 
+    tests224 = [
+        {
+            'msg': '',
+            'bitlen': 0,
+            'digest': 'd14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f',
+        },
+        {
+            'msg': 'abc',
+            'bitlen': 24,
+            'digest': '23097d223405d8228642a477bda255b32aadbce4bda0b3f7e36c9da7',
+        },
+        {
+            'msg': ba('80'),
+            'bitlen': 1,
+            'digest': '0d05096bca2a4a77a2b47a05a59618d01174b37892376135c1b6e957',
+        },
+        {
+            'msg': ba('80'),
+            'bitlen': 3,
+            'digest': '4f2ec61c914dce56c3fe5067aa184125ab126c39edb8bf64f58bdccd',
+        },
+        {
+            'msg': ba(
+                '85 98 a0 b2 2e 14 02 45 84 23 e2 c1 fd 33 83 ac 16 9b 72 ad ea db bb f0 03 25 5c cc 70 1d fa a3'
+                + '17 de d3 0a 4d 3d f4 2a a4 51 ac 66 04 33 40 3f fe 02 e0 74 5c 2a da 6c'
+            ),
+            'bitlen': 447,
+            'digest': '0d5179a28fa5c9c4fc7a159c66741fe0a527dd36f8ef9044129f157d',
+        },
+        {
+            'msg': ba(
+                '6c 9e 0a e9 53 b1 b4 86 ec d6 b7 66 d7 b9 61 ab 79 bc df e2 ff e9 5e 94 9f 2a 71 17 21 bc b3 aa'
+                + '9f e1 ad c2 89 d5 fa 9e eb 04 a8 21 f3 7a e2 e1 ae 9b cc 7c 12 14 af 2b'
+            ),
+            'bitlen': 448,
+            'digest': '2ac7951975a4ec53cce97adf3833f575f3abc337abc557e6a16a6fe7',
+        },
+        {
+            'msg': ba(
+                'f4 2c b0 cc e9 ef b6 09 8a 47 42 f0 75 e6 85 fe 06 46 6b 81 20 52 7b f1 2a 63 00 83 57 6d 66 fc'
+                + '2b 7b e6 c3 3b 58 66 3b 34 8f 9a 4f 1e 96 70 4f e2 47 ab fa 0a 8f cd dc 80'
+            ),
+            'bitlen': 449,
+            'digest': '2287a19d6161cd686c41a1c5981dc57261badf4bd686caca018df2bb',
+        },
+    ]
+
+    for test in tests224:
+        check(test['msg'], test['bitlen'], test['digest'], cls=Sha224bit)
+
     assert (
         Sha256bit(b'\x00', bitlen=1).hexdigest() == 'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'
     )
@@ -188,37 +245,69 @@ def check_against_nist_cavp():
     from pathlib import Path
 
     resource_path = Path(__file__).parent
-    for tv_file in ['SHA256ShortMsg.rsp', 'SHA256LongMsg.rsp']:
+    tv_files = [
+        (Sha256bit, 'SHA256ShortMsg.rsp'),
+        (Sha256bit, 'SHA256LongMsg.rsp'),
+        (Sha224bit, 'SHA224ShortMsg.rsp'),
+        (Sha224bit, 'SHA224LongMsg.rsp'),
+    ]
+    for cls, tv_file in tv_files:
         tv_path = resource_path.joinpath(tv_file)
         with open(tv_path) as f:
             for line in f:
                 if line.startswith('Len'):
                     bitlen = int(re.search(r'Len = (.+)', line).group(1))
                 if line.startswith('Msg'):
-                    msg = Utils.ba(re.search(r'Msg = (.+)', line).group(1))
+                    msg = ba(re.search(r'Msg = (.+)', line).group(1))
                     if bitlen == 0:
                         msg = bytes(0)
                 if line.startswith('MD'):
                     md = re.search(r'MD = (.+)', line).group(1)
-                    check(msg, bitlen, md)
+                    check(msg, bitlen, md, cls)
 
 
 def check_api():
-    print('check API')
+    for cls, ref in ALGOS:
+        check_api_alg(cls, ref)
+
+    dut = Sha256bit(b'\x00', bitlen=1)
+    state = dut.export_state()
+    dut2 = Sha256bit.import_state(state)
+    assert dut2.hexdigest() == 'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'
+
+    # a state must not be imported in an instance of another algorithm
+    state = Sha224bit(b'abc').export_state()
+    try:
+        Sha256bit.import_state(state)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError('importing a sha224 state into Sha256bit should fail')
+
+    # states exported by older versions have no 'alg' entry
+    state = Sha256bit(b'a').export_state()
+    del state['alg']
+    dut = Sha256bit.import_state(state)
+    dut.update(b'bc')
+    assert dut.digest() == hashlib.sha256(b'abc').digest()
+
+
+def check_api_alg(cls, ref):
+    print('check %s API' % cls.__name__)
     msg = msg_generator(bytes(0), 300 * 8)
-    expected = hashlib.sha256(msg).digest()
-    # print(Utils.hexstr(msg))
-    # print(Utils.hexstr(expected))
-    assert expected == Sha256bit(msg).digest()
+    expected = ref(msg).digest()
+    # print(hexstr(msg))
+    # print(hexstr(expected))
+    assert expected == cls(msg).digest()
     for len1 in range(0, len(msg) * 8):
-        dut1 = Sha256bit()
+        dut1 = cls()
         dut1.update(msg[:len1])
         state = dut1.export_state()
-        dut2 = Sha256bit.import_state(state)
+        dut2 = cls.import_state(state)
         dut2.update(msg[len1:])
         assert expected == dut2.digest()
     for len1 in range(1, len(msg) * 8):
-        dut = Sha256bit()
+        dut = cls()
         remaining = len(msg)
         p = 0
         while remaining > 0:
@@ -228,12 +317,8 @@ def check_api():
             remaining -= len1
         assert expected == dut.digest()
         state = dut.export_state()
-        dut2 = Sha256bit.import_state(state)
+        dut2 = cls.import_state(state)
         assert expected == dut2.digest()
-    dut = Sha256bit(b'\x00', bitlen=1)
-    state = dut.export_state()
-    dut2 = Sha256bit.import_state(state)
-    assert dut2.hexdigest() == 'bd4f9e98beb68c6ead3243b1b4c7fed75fa4feaab1f84795cbd8a98676a2a375'
 
 
 if __name__ == '__main__':
