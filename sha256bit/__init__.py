@@ -226,7 +226,7 @@ class Sha256bit:
                 logging.debug('  g     = 0x%08x', g)
                 logging.debug('  h     = 0x%08x', h)
 
-        for i, (x, y) in enumerate(zip(self._h, [a, b, c, d, e, f, g, h])):
+        for i, (x, y) in enumerate(zip(self._h, [a, b, c, d, e, f, g, h], strict=True)):
             self._h[i] = (x + y) & Sha256bit.F32
 
     def update(self, m, *, bitlen=None):
