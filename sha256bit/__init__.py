@@ -126,7 +126,7 @@ class Sha256bit:
             c = self._cache
             if self._verbose:
                 logging.info('exporting current state:')
-                logging.info('  bitlen = %d' % self._counter)
+                logging.info('  bitlen = %d', self._counter)
                 logging.info('  state:  ' + hexstr(self._state_bytes()))
                 logging.info('  cache:  ' + hexstr(c))
         else:
@@ -143,7 +143,7 @@ class Sha256bit:
 
         alg = state.get('alg', cls._alg)
         if alg != cls._alg:
-            raise AssertionError('state is for %s, cannot import it in %s' % (alg, cls.__name__))
+            raise AssertionError(f'state is for {alg}, cannot import it in {cls.__name__}')
         o = cls()
         o._counter = state['cnt']
         if 0 != (o._counter % 8):
@@ -160,7 +160,7 @@ class Sha256bit:
             o._cache = bytearray(state['cache'])
             if o._verbose:
                 logging.info('importing current state:')
-                logging.info('  bitlen = %d' % o._counter)
+                logging.info('  bitlen = %d', o._counter)
                 logging.info('  state:  ' + hexstr(o._state_bytes()))
                 logging.info('  cache:  ' + hexstr(o._cache))
         return o
@@ -185,14 +185,14 @@ class Sha256bit:
 
         if self._verbose:
             logging.debug('current state:')
-            logging.debug('  a = 0x%08x' % (a))
-            logging.debug('  b = 0x%08x' % (b))
-            logging.debug('  c = 0x%08x' % (c))
-            logging.debug('  d = 0x%08x' % (d))
-            logging.debug('  e = 0x%08x' % (e))
-            logging.debug('  f = 0x%08x' % (f))
-            logging.debug('  g = 0x%08x' % (g))
-            logging.debug('  h = 0x%08x' % (h))
+            logging.debug('  a = 0x%08x', a)
+            logging.debug('  b = 0x%08x', b)
+            logging.debug('  c = 0x%08x', c)
+            logging.debug('  d = 0x%08x', d)
+            logging.debug('  e = 0x%08x', e)
+            logging.debug('  f = 0x%08x', f)
+            logging.debug('  g = 0x%08x', g)
+            logging.debug('  h = 0x%08x', h)
 
         for i in range(64):
             s0 = Sha256bit._rotr(a, 2) ^ Sha256bit._rotr(a, 13) ^ Sha256bit._rotr(a, 22)
@@ -210,21 +210,21 @@ class Sha256bit:
             a = (t1 + t2) & Sha256bit.F32
 
             if self._verbose:
-                logging.debug('state after round %d' % (i + 1))
-                logging.debug('  k[%02d] = 0x%08x' % (i, Sha256bit.K[i]))
-                logging.debug('  w[%02d] = 0x%08x' % (i, w[i]))
-                logging.debug('  s0    = 0x%08x' % (s0))
-                logging.debug('  s1    = 0x%08x' % (s1))
-                logging.debug('  t1    = 0x%08x' % (t1))
-                logging.debug('  t2    = 0x%08x' % (t2))
-                logging.debug('  a     = 0x%08x' % (a))
-                logging.debug('  b     = 0x%08x' % (b))
-                logging.debug('  c     = 0x%08x' % (c))
-                logging.debug('  d     = 0x%08x' % (d))
-                logging.debug('  e     = 0x%08x' % (e))
-                logging.debug('  f     = 0x%08x' % (f))
-                logging.debug('  g     = 0x%08x' % (g))
-                logging.debug('  h     = 0x%08x' % (h))
+                logging.debug('state after round %d', i + 1)
+                logging.debug('  k[%02d] = 0x%08x', i, Sha256bit.K[i])
+                logging.debug('  w[%02d] = 0x%08x', i, w[i])
+                logging.debug('  s0    = 0x%08x', s0)
+                logging.debug('  s1    = 0x%08x', s1)
+                logging.debug('  t1    = 0x%08x', t1)
+                logging.debug('  t2    = 0x%08x', t2)
+                logging.debug('  a     = 0x%08x', a)
+                logging.debug('  b     = 0x%08x', b)
+                logging.debug('  c     = 0x%08x', c)
+                logging.debug('  d     = 0x%08x', d)
+                logging.debug('  e     = 0x%08x', e)
+                logging.debug('  f     = 0x%08x', f)
+                logging.debug('  g     = 0x%08x', g)
+                logging.debug('  h     = 0x%08x', h)
 
         for i, (x, y) in enumerate(zip(self._h, [a, b, c, d, e, f, g, h])):
             self._h[i] = (x + y) & Sha256bit.F32
@@ -243,22 +243,10 @@ class Sha256bit:
             if 0 != (bitlen % 8):
                 self._has_bitlen = True
                 if bytes_bitlen - bitlen >= 8 or bitlen >= bytes_bitlen:
-                    raise AssertionError(
-                        'bitlen=%d, bytes_bitlen=%d'
-                        % (
-                            bitlen,
-                            bytes_bitlen,
-                        )
-                    )
+                    raise AssertionError(f'bitlen={bitlen}, bytes_bitlen={bytes_bitlen}')
             else:
                 if bitlen != bytes_bitlen:
-                    raise AssertionError(
-                        'bitlen=%d, bytes_bitlen=%d'
-                        % (
-                            bitlen,
-                            bytes_bitlen,
-                        )
-                    )
+                    raise AssertionError(f'bitlen={bitlen}, bytes_bitlen={bytes_bitlen}')
             self._counter += bitlen
         else:
             self._counter += bytes_bitlen
@@ -284,11 +272,11 @@ class Sha256bit:
         shift = self._counter % 8
 
         if self._verbose:
-            logging.debug('bitlen = %d' % self._counter)
-            logging.debug('last_block_bitlen = %d' % last_block_bitlen)
-            logging.debug('last_block_full_bytes_cnt = %d' % last_block_full_bytes_cnt)
-            logging.debug('padlen = %d' % padlen)
-            logging.debug('shift = %d' % shift)
+            logging.debug('bitlen = %d', self._counter)
+            logging.debug('last_block_bitlen = %d', last_block_bitlen)
+            logging.debug('last_block_full_bytes_cnt = %d', last_block_full_bytes_cnt)
+            logging.debug('padlen = %d', padlen)
+            logging.debug('shift = %d', shift)
 
         if shift > 0 and (len(self._cache) > 0):
             mask = 0xFF << (8 - shift)
@@ -299,7 +287,7 @@ class Sha256bit:
         self._cache += (b'\x00' * padlen) + self._counter.to_bytes(8, byteorder='big')
 
         if len(self._cache) not in [64, 128]:
-            raise AssertionError('len(self._cache)=%d' % len(self._cache))
+            raise AssertionError(f'len(self._cache)={len(self._cache)}')
 
     def digest(self):
         """Return the digest of the bytes passed to the update() method
@@ -308,7 +296,7 @@ class Sha256bit:
         if self._digest is not None:
             return self._digest
         if self._verbose:
-            logging.info('bitlen: %d' % self._counter)
+            logging.info('bitlen: %d', self._counter)
 
         self._pad()
         blocks = [self._cache[i : i + 64] for i in range(0, len(self._cache), 64)]

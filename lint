@@ -6,4 +6,4 @@ echo "Running 'black'"
 black .
 
 echo "Running 'ruff'"
-ruff --fix .
+ruff check --fix .

@@ -43,7 +43,7 @@ def check_against_hashlib(n_seeds=3, max_length=1024 * 4):
 
 
 def check_against_hashlib_alg(cls, ref, n_seeds, max_length):
-    print('check %s against hashlib' % cls.__name__)
+    print(f'check {cls.__name__} against hashlib')
 
     assert ref(b'abc').digest() == cls(b'abc').digest()
 
@@ -68,7 +68,7 @@ def check(msg, bitlen, sig, cls=Sha256bit):
         msg = msg.encode('ascii')
     descr = 'alg      = ' + cls.__name__ + '\n'
     descr += 'msg      = ' + hexstr(msg) + '\n'
-    descr += 'bitlen   = %d\n' % bitlen
+    descr += f'bitlen   = {bitlen}\n'
     descr += 'expected = ' + sig + '\n'
     try:
         m.update(msg, bitlen=bitlen)
@@ -293,7 +293,7 @@ def check_api():
 
 
 def check_api_alg(cls, ref):
-    print('check %s API' % cls.__name__)
+    print(f'check {cls.__name__} API')
     msg = msg_generator(bytes(0), 300 * 8)
     expected = ref(msg).digest()
     # print(hexstr(msg))

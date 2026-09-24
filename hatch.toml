@@ -23,17 +23,17 @@ detached = true
 dependencies = [
   "black>=22.10.0",
   "mypy>=0.991",
-  "ruff>=0.0.166",
+  "ruff>=0.2.0",
 ]
 [envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args: sha256bit }"
 style = [
-  "ruff {args:.}",
+  "ruff check {args:.}",
   "black --check --diff {args:.}",
 ]
 fmt = [
   "black {args:.}",
-  "ruff --fix {args:.}",
+  "ruff check --fix {args:.}",
   "style",
 ]
 all = [

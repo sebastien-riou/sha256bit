@@ -24,4 +24,4 @@ def ba(hexstr):
 
 def hexstr(data):
     """Return an upper case hex string of data, bytes separated by a space"""
-    return ' '.join(['%02X' % b for b in data])
+    return ' '.join([f'{b:02X}' for b in data])
