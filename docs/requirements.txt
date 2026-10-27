@@ -16,7 +16,7 @@ packaging==23.1
 pluggy==1.0.0
 Pygments==2.15.1
 pytest==7.3.1
-requests==2.32.4
+requests==2.33.0
 smmap==5.0.0
 snowballstemmer==2.2.0
 Sphinx==6.2.1
