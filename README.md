@@ -16,7 +16,28 @@ Pure python implementation of SHA256 and SHA224 with features which are often la
 
 ## Installation
 
-    python3 -m pip install sha256bit
+### Command line tool
+Install with [pipx](https://pipx.pypa.io), it puts the `sha256bit` command in its own isolated environment:
+
+    pipx install sha256bit
+
+The message is given as a hex string:
+
+    $ sha256bit 616263
+    BA 78 16 BF 8F 01 CF EA 41 41 40 DE 5D AE 22 23 B0 03 61 A3 96 17 7A 9C B4 10 FF 61 F2 00 15 AD
+    $ sha256bit --algo sha224 616263
+    23 09 7D 22 34 05 D8 22 86 42 A4 77 BD A2 55 B3 2A AD BC E4 BD A0 B3 F7 E3 6C 9D A7
+    $ sha256bit --bit-length 1 00
+    BD 4F 9E 98 BE B6 8C 6E AD 32 43 B1 B4 C7 FE D7 5F A4 FE AA B1 F8 47 95 CB D8 A9 86 76 A2 A3 75
+
+If `pipx` is missing, on Debian/Ubuntu: `sudo apt install pipx && pipx ensurepath`.
+
+### Python API
+Add it to your project with [pipenv](https://pipenv.pypa.io):
+
+    pipenv install sha256bit
+
+If `pipenv` is missing: `pipx install pipenv`.
 
 ## Usage
 
@@ -68,22 +89,20 @@ you can also run each test separately:
 
 ## Generate the doc
 
-    cd docs
-    pipenv shell
-    make clean doctest html
+    pipenv sync --dev
+    pipenv run make -C docs clean doctest html
 
-## Update pipenv for the doc
+## Update pipenv
 
-    cd docs
-    pipenv shell
-    #use pip to update whatever ou want
-    pip freeze > requirements.txt
-    pipenv update
+The root `Pipfile` holds the tools for building, linting and the doc, all in `[dev-packages]` since the package itself has no dependencies. CI and Read the Docs install the versions pinned in `Pipfile.lock`, so commit it after updating:
+
+    pipenv update --dev
     
 ## Build the package
-Build is done using `hatchling`. The script `build` allows to build for different version of python3:
+Build is done using `hatchling`.
 
-    ./build python3.12
+    pipenv sync --dev
+    pipenv run ./build
 
 
 ## Create a new version
@@ -92,5 +111,6 @@ Version is managed by `hatch-vcs`, you just need to create a tag in github.
 ## Launch linters
 They use the configuration from `pyproject.toml`
 
-    ./lint
+    pipenv sync --dev
+    pipenv run ./lint
 

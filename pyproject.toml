@@ -26,6 +26,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = []
+[project.scripts]
+sha256bit = "sha256bit.cli:main"
 [project.urls]
 "Homepage" = "https://github.com/sebastien-riou/sha256bit"
 "Bug Tracker" = "https://github.com/sebastien-riou/sha256bit/issues"
